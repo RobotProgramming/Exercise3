@@ -1,0 +1,166 @@
+import lejos.nxt.Button;
+import lejos.nxt.LightSensor;
+import lejos.nxt.Motor;
+import lejos.nxt.SensorPort;
+import lejos.util.Delay;
+
+/**
+ * A class that enables the robot to follow a black line using two light
+ * sensors, one right and one left, both aiming to avoid the line.
+ * 
+ */
+public class FollowTape extends RobotProgrammingDemo {
+
+	private final SensorPort lightSensorLeft;
+	private final SensorPort lightSensorRight;
+
+	/**
+	 * Constructs the class, assigning the sensor ports to the corresponding
+	 * light sensors.
+	 * 
+	 * @param _port1
+	 *            The Sensor Port for the right light sensor.
+	 * @param _port2
+	 *            The Sensor Port for the left light sensor.
+	 */
+	public FollowTape(SensorPort _port1, SensorPort _port2) {
+		super();
+		lightSensorRight = _port1;
+		lightSensorLeft = _port2;
+	}
+
+	/**
+	 * Creates the light sensors then makes variables to store values for the
+	 * desired robot speed and turn speed. Sets both motors to the value inside
+	 * the variable created and makes both move forwards. When the right light
+	 * sensor sees a darker line (hence the value returned is less than 40), the
+	 * right motor is slowed down therefore beginning a turn, the routine then
+	 * delays and when the right sensor cannot detect the darker line anymore,
+	 * the right motors speed is set back to the original speed. The exact same
+	 * method is carried out for the left sensor using the left motor speed.
+	 */
+	public void run() {
+		LightSensor leftLight = new LightSensor(lightSensorLeft);
+		LightSensor rightLight = new LightSensor(lightSensorRight);
+
+		while (m_run) {
+			int Speed = (int) (Motor.A.getMaxSpeed() / 1.5);
+			int turnSpeed = (int) (Motor.A.getMaxSpeed() / 5);
+			Motor.A.setSpeed(Speed);
+			Motor.C.setSpeed(Speed);
+			Motor.A.forward();
+			Motor.C.forward();
+
+			while (rightLight.readValue() < 40) {
+				Motor.A.setSpeed(turnSpeed);
+				Delay.msDelay(300);
+			}
+
+			Motor.A.setSpeed(Speed);
+			Motor.A.forward();
+			while (leftLight.readValue() < 40) {
+				Motor.C.setSpeed(turnSpeed);
+				Delay.msDelay(300);
+			}
+
+		}
+
+	}
+
+	/**
+	 * The method waits for any button the be pressed and creates an instance of
+	 * itself passing in the sensor ports. Then, using the instance just made,
+	 * the run method is called.
+	 * 
+	 */
+	public static void main(String[] args) {
+		Button.waitForAnyPress();
+		FollowTape PF = new FollowTape(SensorPort.S2, SensorPort.S3);
+		PF.run();
+
+	}
+
+}
+import lejos.nxt.Button;
+import lejos.nxt.LightSensor;
+import lejos.nxt.Motor;
+import lejos.nxt.SensorPort;
+import lejos.util.Delay;
+
+/**
+ * A class that enables the robot to follow a black line using two light
+ * sensors, one right and one left, both aiming to avoid the line.
+ * 
+ */
+public class FollowTape extends RobotProgrammingDemo {
+
+	private final SensorPort lightSensorLeft;
+	private final SensorPort lightSensorRight;
+
+	/**
+	 * Constructs the class, assigning the sensor ports to the corresponding
+	 * light sensors.
+	 * 
+	 * @param _port1
+	 *            The Sensor Port for the right light sensor.
+	 * @param _port2
+	 *            The Sensor Port for the left light sensor.
+	 */
+	public FollowTape(SensorPort _port1, SensorPort _port2) {
+		super();
+		lightSensorRight = _port1;
+		lightSensorLeft = _port2;
+	}
+
+	/**
+	 * Creates the light sensors then makes variables to store values for the
+	 * desired robot speed and turn speed. Sets both motors to the value inside
+	 * the variable created and makes both move forwards. When the right light
+	 * sensor sees a darker line (hence the value returned is less than 40), the
+	 * right motor is slowed down therefore beginning a turn, the routine then
+	 * delays and when the right sensor cannot detect the darker line anymore,
+	 * the right motors speed is set back to the original speed. The exact same
+	 * method is carried out for the left sensor using the left motor speed.
+	 */
+	public void run() {
+		LightSensor leftLight = new LightSensor(lightSensorLeft);
+		LightSensor rightLight = new LightSensor(lightSensorRight);
+
+		while (m_run) {
+			int Speed = (int) (Motor.A.getMaxSpeed() / 1.5);
+			int turnSpeed = (int) (Motor.A.getMaxSpeed() / 5);
+			Motor.A.setSpeed(Speed);
+			Motor.C.setSpeed(Speed);
+			Motor.A.forward();
+			Motor.C.forward();
+
+			while (rightLight.readValue() < 40) {
+				Motor.A.setSpeed(turnSpeed);
+				Delay.msDelay(300);
+			}
+
+			Motor.A.setSpeed(Speed);
+			Motor.A.forward();
+			while (leftLight.readValue() < 40) {
+				Motor.C.setSpeed(turnSpeed);
+				Delay.msDelay(300);
+			}
+
+		}
+
+	}
+
+	/**
+	 * The method waits for any button the be pressed and creates an instance of
+	 * itself passing in the sensor ports. Then, using the instance just made,
+	 * the run method is called.
+	 * 
+	 */
+	public static void main(String[] args) {
+		Button.waitForAnyPress();
+		FollowTape PF = new FollowTape(SensorPort.S2, SensorPort.S3);
+		PF.run();
+
+	}
+
+}

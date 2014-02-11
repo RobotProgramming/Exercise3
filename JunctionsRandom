@@ -1,0 +1,134 @@
+import java.util.Random;
+import lejos.nxt.Button;
+import lejos.nxt.LightSensor;
+import lejos.nxt.Motor;
+import lejos.nxt.SensorPort;
+import lejos.robotics.navigation.DifferentialPilot;
+import lejos.util.Delay;
+
+/**
+ * A class that makes the robot follow black tape and when it finds a junction
+ * it executes a random manoeuvre.
+ * 
+ */
+public class JunctionsRandom extends RobotProgrammingDemo {
+
+	private final SensorPort lightSensorLeft;
+	private final SensorPort lightSensorRight;
+	LightSensor leftLight;
+	LightSensor rightLight;
+	private final static int Speed = (int) (Motor.A.getMaxSpeed() / 3);
+	private final DifferentialPilot pilot = new DifferentialPilot(2.1f, 4.4f,
+			Motor.A, Motor.C, true); // parameters in inches
+
+	/**
+	 * Constructs the class assigning the sensor ports to the light sensors
+	 * either side and sets both flood lights to true.
+	 * 
+	 * @param _port1
+	 *            The right light sensor.
+	 * @param _port2
+	 *            The left light sensor.
+	 */
+	public JunctionsRandom(SensorPort _port1, SensorPort _port2) {
+		super();
+		lightSensorRight = _port1;
+		lightSensorLeft = _port2;
+		leftLight = new LightSensor(lightSensorLeft);
+		rightLight = new LightSensor(lightSensorRight);
+		leftLight.setFloodlight(true);
+		rightLight.setFloodlight(true);
+	}
+
+	/**
+	 * Sets both motors to start moving at the speed in the Speed variable,
+	 * which is the max speed over some number. If the left light sees a darker
+	 * line, it moves forwards 0.5 centimetres then checks to see whether the
+	 * right light sees a darker colour too. If it does, that means that both
+	 * sensor see a darker colour and so henceforth are at a junction. The robot
+	 * then calls the RandomTurn method. Else, the robot simply stops one motor
+	 * and moves the other in order to keep on the same black line it is
+	 * following. Afterwards, the motor that was stopped starts moving forwards
+	 * again. The exact same is repeated for the right light sensor however just
+	 * swapping the motors controlled to the opposing ones.
+	 */
+	public void run() {
+
+		while (m_run) {
+			Motor.A.forward();
+			Motor.C.forward();
+			Motor.A.setSpeed(Speed);
+			Motor.C.setSpeed(Speed);
+
+			if (leftLight.readValue() < 40) {
+				pilot.travel(-0.5);
+
+				if (rightLight.readValue() < 40) {
+
+					RandomTurn();
+				} else {
+					Motor.A.forward();
+					Motor.C.stop();
+					Delay.msDelay(200);
+				}
+			}
+			Motor.C.forward();
+
+			if (rightLight.readValue() < 40) {
+				pilot.travel(-0.5);
+
+				if (leftLight.readValue() < 40) {
+
+					RandomTurn();
+
+				} else {
+					Motor.C.forward();
+					Motor.A.stop();
+					Delay.msDelay(200);
+				}
+
+			}
+
+		}
+
+	}
+
+	/**
+	 * This method generates a random number between 1 and 4, then either turns
+	 * left, turns right, turns backwards or proceeds forwards depending on what
+	 * the number generated is.
+	 */
+	public void RandomTurn() {
+		Random rand = new Random();
+		int randomNum = rand.nextInt((4 - 1) + 1) + 1;
+
+		if (randomNum == 1) {
+			pilot.travel(-3.5);
+			pilot.rotate(90);
+		}
+		if (randomNum == 2) {
+			pilot.travel(-3.5);
+			pilot.rotate(-90);
+		}
+		if (randomNum == 3) {
+			pilot.travel(-3.5);
+			pilot.rotate(180);
+		} else
+			pilot.travel(-3.5);
+
+	}
+
+	/**
+	 * The robot waits for any button to be pressed and creates an instance of
+	 * itself using the two sensor ports. Then the run method is executed using
+	 * the instance just created, JR.
+	 * 
+	 */
+	public static void main(String[] args) {
+		Button.waitForAnyPress();
+		JunctionsRandom JR = new JunctionsRandom(SensorPort.S2, SensorPort.S3);
+		JR.run();
+
+	}
+
+}

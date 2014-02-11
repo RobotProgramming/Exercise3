@@ -1,0 +1,148 @@
+import java.util.ArrayList;
+import lejos.nxt.Button;
+import lejos.nxt.LightSensor;
+import lejos.nxt.Motor;
+import lejos.nxt.SensorPort;
+import lejos.robotics.navigation.DifferentialPilot;
+import lejos.util.Delay;
+
+/**
+ * A class that makes the robot follow black tape and when it finds a junction
+ * it executes a sequence of moves.
+ * 
+ */
+public class JunctionsPath extends RobotProgrammingDemo {
+
+	private final SensorPort lightSensorLeft;
+	private final SensorPort lightSensorRight;
+	LightSensor leftLight;
+	LightSensor rightLight;
+	private final static int Speed = (int) (Motor.A.getMaxSpeed() / 3);
+	private ArrayList<Integer> path;
+
+	private final DifferentialPilot pilot = new DifferentialPilot(2.1f, 4.4f,
+			Motor.A, Motor.C, true); // parameters in inches
+
+	/**
+	 * Constructs the class assigning the sensor ports to the light sensors
+	 * either side and sets both flood lights to true. The ArrayList is then
+	 * populated with the sequence of moves to be taken.
+	 * 
+	 * @param _port1
+	 *            The right light sensor.
+	 * @param _port2
+	 *            The left light sensor.
+	 */
+	public JunctionsPath(SensorPort _port1, SensorPort _port2) {
+		super();
+		lightSensorRight = _port1;
+		lightSensorLeft = _port2;
+		leftLight = new LightSensor(lightSensorLeft);
+		rightLight = new LightSensor(lightSensorRight);
+		leftLight.setFloodlight(true);
+		rightLight.setFloodlight(true);
+		path = new ArrayList<Integer>(8);
+		path.add(90);
+		path.add(-90);
+		path.add(0);
+		path.add(90);
+		path.add(-90);
+		path.add(0);
+		path.add(90);
+		path.add(90);
+	}
+
+	/**
+	 * Creates a new counter with a value of zero and sets both motors to start
+	 * moving at the speed in the Speed variable, which is the max speed over
+	 * some number. If the left light sees a darker line, it moves forwards 0.5
+	 * centimetres then checks to see whether the right light sees a darker
+	 * colour too. If it does, that means that both sensor see a darker colour
+	 * and so henceforth are at a junction. The robot then executes the
+	 * operation held in the array list for the corresponding count value by
+	 * calling the path method, the count value is then incremented. Else, the
+	 * robot simply stops one motor and moves the other in order to keep on the
+	 * same black line it is following. Afterwards, the motor that was stopped
+	 * starts moving forwards again. The exact same is repeated for the right
+	 * light sensor however just swapping the motors controlled to the opposing
+	 * ones.
+	 * 
+	 */
+	public void run() {
+		int count = 0;
+
+		while (m_run) {
+			Motor.A.forward();
+			Motor.C.forward();
+			Motor.A.setSpeed(Speed);
+			Motor.C.setSpeed(Speed);
+
+			if (leftLight.readValue() < 40) {
+				pilot.travel(-0.5);
+
+				if (rightLight.readValue() < 40) {
+					path(count);
+					count++;
+				} else {
+					Motor.A.forward();
+					Motor.C.stop();
+					Delay.msDelay(200);
+				}
+			}
+			Motor.C.forward();
+
+			if (rightLight.readValue() < 40) {
+				pilot.travel(-0.5);
+
+				if (leftLight.readValue() < 40) {
+
+					path(count);
+					count++;
+				} else {
+					Motor.C.forward();
+					Motor.A.stop();
+					Delay.msDelay(200);
+				}
+
+			}
+
+		}
+
+	}
+
+	/**
+	 * If the size of the array list path is less then or equal to count, m_run
+	 * is set to false terminating the code in the run method, the system then
+	 * outputs that the program is finished. Else, the move to be executed is
+	 * fetched from the path array list in accordance to the value of the count
+	 * variable. The pilot then travels and rotates in accordance to how much it
+	 * is set to by the value in the path.
+	 * 
+	 * @param count
+	 */
+	public void path(int count) {
+		if (path.size() <= count) {
+			m_run = false;
+			System.out.println("Finished!");
+		} else {
+			int move = path.get(count);
+			pilot.travel(-3.5);
+			pilot.rotate(move);
+		}
+	}
+
+	/**
+	 * The robot waits for any button to be pressed and creates an instance of
+	 * itself using the two sensor ports. Then the run method is executed using
+	 * the instance just created, JR.
+	 * 
+	 */
+	public static void main(String[] args) {
+		Button.waitForAnyPress();
+		JunctionsPath JP = new JunctionsPath(SensorPort.S2, SensorPort.S3);
+		JP.run();
+
+	}
+
+}
+
